@@ -411,7 +411,6 @@ local function draw()
     if increment % 4 == 0 then
         increment = 1
         
-        print(testmaterialinc)
         testmaterialinc = testmaterialinc + 1
 
 

@@ -1,14 +1,14 @@
 --[[
     Credits to:
-    @flashintv..@Terminatormachine for helping me
-    @10trips for adding proper item names
+    @lnx00 for lib
+    @wringly/10trips creating
 ]]
 
 --local font = draw.CreateFont("Tahoma", -11, 500, FONTFLAG_OUTLINE | FONTFLAG_CUSTOM)
 --UnlitGeneric
 local MenuLib = require("Menu")
 
-local menumain = MenuLib.Create("Viewmodel v1.11 by wringly")
+local menumain = MenuLib.Create("Viewmodel v1.13 by wringly")
 
 menumain:SetSize(300,800)
 menumain.Style.Space = 4
@@ -48,7 +48,7 @@ local bumptextures = { -- textures added from tf2_textures_dir.vpk
 menumain:AddComponent(MenuLib.Label("Viewmodel Settings"))
 
 local basetexturebox = menumain:AddComponent(MenuLib.Combo("Base Texture", basetextures))
-basetexturebox:Select(1)
+basetexturebox:Select(4)
 local bumptexturebox = menumain:AddComponent(MenuLib.Combo("Bump Texture", bumptextures))
 bumptexturebox:Select(1)
 
@@ -81,10 +81,11 @@ local g = menumain:AddComponent(MenuLib.Slider("G", 0, 100, 5))
 local b = menumain:AddComponent(MenuLib.Slider("B", 0, 100, 50))
 
 -- have not figured this out :(
---menumain:AddComponent(MenuLib.Label("Animation"))
---local rotatespeed = menumain:AddComponent(MenuLib.Slider("Rotation Speed", -100, 100, 0))
---local directionx = menumain:AddComponent(MenuLib.Slider("Direction X", -100, 100, 0))
---local directiony = menumain:AddComponent(MenuLib.Slider("Direction Y", -100, 100, 0))
+menumain:AddComponent(MenuLib.Label("Animation"))
+--local speed = menumain:AddComponent(MenuLib.Slider("Speed", 0, 20, 10))
+local rotatespeed = menumain:AddComponent(MenuLib.Slider("Rotation", -100, 100, 0))
+local directionx = menumain:AddComponent(MenuLib.Slider("Direction X", -100, 100, 0))
+local directiony = menumain:AddComponent(MenuLib.Slider("Direction Y", -100, 100, 0))
 
 --pls
 local frenselval 
@@ -115,10 +116,10 @@ local bval
 local basetextureselect
 local bumptextureselect
 
---local rotatespeedval = 0
-local rotateincrement = 0
---local directionxval
---local directionyval
+--local speedval = 5
+local rotatespeedval = 0
+local directionxval = 0
+local directionyval = 0
 
 
 
@@ -152,11 +153,21 @@ local kv = [["VertexLitGeneric"
 
 myMaterial = materials.Create( "myMaterial", kv )
 
+
+local materialTable = {}
+
+
+
 local function update()
-    kv = [["VertexLitGeneric"
-        {
+
+    materialTable = {}
+
+    for i = 1, 100 do
+        table.insert(materialTable,
+        materials.Create( "test1", [["VertexLitGeneric"
+            {
             $basetexture "]]..basetextureselect..[["
-            $basetexturetransform "center .5 .5 scale 3 3 rotate ]]..rotateincrement..[[ translate 0 0"
+            $basetexturetransform "center .5 .5 scale 3 3 rotate ]]..tostring(i*rotatespeedval/100)..[[ translate ]]..tostring(i*directionxval/1000)..[[ ]]..tostring(i*directionyval/1000)..[["
             $bumpmap "]]..bumptextureselect..[["
             $envmap "skybox/sky_dustbowl_01"
             $envmapfresnel "]]..frenselval..[["
@@ -169,11 +180,34 @@ local function update()
             $envmaptint "[]]..rval.." "..gval.." "..bval..[[]"
             $selfillumtint "[]]..selfillumRval.." "..selfillumGval.." "..selfillumBval..[[]"
             
-        }
-        ]]
+            }
+            ]]))
+    end
+    
+    print(#materialTable)
+    
+    
+--    kv = [["VertexLitGeneric"
+--        {
+--            $basetexture "]]..basetextureselect..[["
+--            $basetexturetransform "center .5 .5 scale 3 3 rotate ]]..rotateincrement..[[ translate 0 0"
+--            $bumpmap "]]..bumptextureselect..[["
+--            $envmap "skybox/sky_dustbowl_01"
+--            $envmapfresnel "]]..frenselval..[["
+--            $ignorez "]]..seethroughval..[["
+--            $phong "]]..phongval..[["
+--            $phongfresnelranges "[]]..phongxval.." "..phongyval.." "..phongzval..[[]"
+--            $selfillum "]]..selfillumval..[["
+--            $selfillumfresnel "]]..selfillumfrenselval..[["
+--            $selfillumfresnelminmaxexp "[]]..selfillumfrenselxval.." "..selfillumfrenselyval.." "..selfillumfrenselzval..[[]"
+--            $envmaptint "[]]..rval.." "..gval.." "..bval..[[]"
+--            $selfillumtint "[]]..selfillumRval.." "..selfillumGval.." "..selfillumBval..[[]"
+--            
+--        }
+--        ]]
+--
 
-
-        myMaterial = materials.Create( "myMaterial", kv )
+--        myMaterial = materials.Create( "myMaterial", kv )
 end
 
 
@@ -209,12 +243,20 @@ local function refresh()
     basetextureselect = basetextures[basetexturebox:GetSelectedIndex()]
     bumptextureselect = bumptextures[bumptexturebox:GetSelectedIndex()]
 
-    --rotatespeedval = tostring(rotatespeed:GetValue())
-    --directionxval = tostring(directionx:GetValue())
-    --directionyval = tostring(directiony:GetValue())
+    --speedval = tostring(speed:GetValue())
+    rotatespeedval = tostring(rotatespeed:GetValue())
+    directionxval = tostring(directionx:GetValue())
+    directionyval = tostring(directiony:GetValue())
 
     update()
 end
+
+
+
+
+
+
+
 
 local function configSave()
 
@@ -360,24 +402,56 @@ refresh()
 local saveconfigbutton = menumain:AddComponent(MenuLib.Button("Save Config", configSave))
 local loadconfigbutton = menumain:AddComponent(MenuLib.Button("Load Config", configLoad))
 
+
+local increment = 1
+local testmaterialinc = 1
+
+local function draw()
+    increment = increment + 1
+    if increment % 4 == 0 then
+        increment = 1
+        
+        print(testmaterialinc)
+        testmaterialinc = testmaterialinc + 1
+
+
+        if testmaterialinc == #materialTable then
+            testmaterialinc = 1
+        end
+    end
+end
+
 local function onDraw(DrawModelContext)
     --rotateincrement = rotateincrement + rotatespeedval
-
     local pEntity = DrawModelContext:GetEntity()
+
+    if pEntity == nil then return end
+
+    
+    if pEntity:GetClass() == "CTFViewModel" then
+        DrawModelContext:ForcedMaterialOverride(materialTable[testmaterialinc])
+    end
+   --[[ local pEntity = DrawModelContext:GetEntity()
 
     if pEntity == nil then return end
 
     if pEntity:GetClass() == "CTFViewModel" then
         DrawModelContext:ForcedMaterialOverride(myMaterial) 
-    end
+    end]]
 end
 
 local function Unload()
     MenuLib.RemoveMenu(menumain)
+    materialTable = nil
+    increment = nil
+    testmaterialinc = nil
 end 
 
 callbacks.Unregister( "DrawModel", "viewModelDraw", onDraw)
 callbacks.Register( "DrawModel", "viewModelDraw", onDraw )
+
+callbacks.Unregister( "Draw", "drawMethod", draw )
+callbacks.Register( "Draw", "drawMethod", draw )
 
 callbacks.Unregister("Unload", "MT_Unload") 
 callbacks.Register("Unload", "MT_Unload", Unload)
